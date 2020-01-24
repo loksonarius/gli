@@ -33,14 +33,11 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(
 		&Config.CurrentTarget,
 		"target",
-		"t",
+		"T",
 		Config.CurrentTarget,
 		"target GitLab instance to run commands against",
 	)
 	viper.BindPFlag("currentTarget", rootCmd.PersistentFlags().Lookup("target"))
-
-	rootCmd.AddCommand(groupCmd)
-	rootCmd.AddCommand(searchCmd)
 }
 
 func initConfig() {

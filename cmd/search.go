@@ -49,4 +49,6 @@ func init() {
 		"",
 		"name of project to limit search to",
 	)
+
+	rootCmd.AddCommand(searchCmd)
 }

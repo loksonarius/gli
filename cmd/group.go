@@ -52,4 +52,6 @@ func init() {
 
 	groupCmd.AddCommand(groupLsCmd)
 	groupCmd.AddCommand(groupCdCmd)
+
+	rootCmd.AddCommand(groupCmd)
 }
