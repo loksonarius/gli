@@ -10,6 +10,5 @@ type Config struct {
 // group being focused on
 type TargetConfig struct {
 	CurrentGroup string
-	Endpoint     string
-	Token        string
+	Auth         AuthConfig
 }
