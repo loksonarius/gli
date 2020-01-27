@@ -48,7 +48,7 @@ func initConfig() {
 	} else {
 		configPath = filepath.Join(configDir, "gli")
 		viper.SetConfigName("config")
-		viper.SetConfigType("toml")
+		viper.SetConfigType("json")
 		viper.AddConfigPath(configPath)
 		viper.AutomaticEnv()
 

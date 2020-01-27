@@ -6,6 +6,7 @@ import (
 	"github.com/loksonarius/gli/cfg"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 const (
@@ -27,32 +28,30 @@ supports Basic Auth, Token, and OAuth Token authentication against a
 given endpoint. If using a token-based authentication, use the -e and -t
 flags. If using Basic Auth, then please use the -u, -p, and -e flags.
 Upon a successful login, the new 'name' target will be stored internally
-along with the given credentials. List these using 'gli target list'.`,
+along with the given credentials. List targets using 'gli target list'.
+Note: if no other targets exist, the a new login will automatically set
+the current target to the latest successfully loged-in-to target.`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			logger.Println("Unimplemented")
 
-			// Should panic out if anything's blatantly wrong
+			// Should panic out if anything's blatantly wrong with our flags
 			validateFlags()
+			name := args[0]
 
-			var auth cfg.AuthConfig
-			switch authType {
-			case "basic":
-				auth = cfg.BasicAuthConfig{
-					Endpoint: endpoint,
-					Username: username,
-					Password: password,
-				}
-			case "oauth":
-				auth = cfg.OAuthConfig{
-					Endpoint: endpoint,
-					Token:    token,
-				}
-			case "token":
-				auth = cfg.TokenAuthConfig{
-					Endpoint: endpoint,
-					Token:    token,
-				}
+			if _, ok := Config.Targets[name]; ok {
+				logger.Fatalf(
+					"Target already exists with name %s, refusing to overwrite",
+					name,
+				)
+			}
+
+			auth := cfg.AuthConfig{
+				Endpoint: endpoint,
+				Type:     authType,
+				Token:    token,
+				Username: username,
+				Password: password,
 			}
 
 			client, err := auth.Client()
@@ -67,6 +66,30 @@ along with the given credentials. List these using 'gli target list'.`,
 			if _, _, err = client.Users.CurrentUserStatus(); err != nil {
 				logger.Fatalf(
 					"Request failed against user status api: %v\n",
+					err,
+				)
+			}
+
+			// Set the value 'newTarget' in Targets[name]
+			if Config.Targets == nil {
+				Config.Targets = make(map[string]cfg.TargetConfig)
+			}
+			Config.Targets[name] = cfg.TargetConfig{
+				CurrentGroup: "/",
+				Auth:         auth,
+			}
+
+			// If no previous target was selected or no other exists, set this
+			// new target as the selected
+			if len(Config.Targets) == 1 || Config.CurrentTarget == "" {
+				Config.CurrentTarget = name
+			}
+
+			// Write Config back to disk
+			viper.Set("targets", Config.Targets)
+			if err = viper.WriteConfig(); err != nil {
+				logger.Fatalf(
+					"Failed to update local config with new target: %v\n",
 					err,
 				)
 			}
