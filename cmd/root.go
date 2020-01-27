@@ -54,7 +54,7 @@ func initConfig() {
 
 		if err := viper.ReadInConfig(); err != nil {
 			if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-				// config doesn't already exist, create it
+				// Config doesn't already exist, create it
 				if err = os.MkdirAll(configPath, 0755); err != nil {
 					logger.Fatalf(
 						"Got error trying to create config dir: %v",
@@ -69,7 +69,7 @@ func initConfig() {
 					)
 				}
 			} else {
-				// config exists, but we failed to read it
+				// Config exists, but we failed to read it
 				logger.Fatalf(
 					"Got error trying to read config file: %v",
 					err,
@@ -86,7 +86,26 @@ func initConfig() {
 	}
 }
 
-// Execute kicks off the gli CLI
+func saveConfig() {
+	viper.Set("currenttarget", Config.CurrentTarget)
+	viper.Set("targets", Config.Targets)
+	if err := viper.WriteConfig(); err != nil {
+		logger.Fatalf(
+			"Failed to update local config with new target: %v\n",
+			err,
+		)
+	}
+}
+
+func verifyTargetName(name string) {
+	if _, ok := Config.Targets[name]; !ok {
+		logger.Fatalf(
+			"%s is not a saved target",
+			name,
+		)
+	}
+}
+
 func Execute(version string) {
 	rootCmd.Version = version
 	rootCmd.SetVersionTemplate("{{.Version}}\n")

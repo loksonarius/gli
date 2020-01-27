@@ -6,7 +6,6 @@ import (
 	"github.com/loksonarius/gli/cfg"
 
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 const (
@@ -33,11 +32,15 @@ Note: if no other targets exist, the a new login will automatically set
 the current target to the latest successfully loged-in-to target.`,
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			logger.Println("Unimplemented")
-
 			// Should panic out if anything's blatantly wrong with our flags
-			validateFlags()
+			validateLoginFlags()
 			name := args[0]
+
+			if name == "" {
+				logger.Fatalf(
+					"Name length must be non-zero",
+				)
+			}
 
 			if _, ok := Config.Targets[name]; ok {
 				logger.Fatalf(
@@ -70,7 +73,8 @@ the current target to the latest successfully loged-in-to target.`,
 				)
 			}
 
-			// Set the value 'newTarget' in Targets[name]
+			// Store new target locally, accounting for the case it may be the
+			// first target ever added
 			if Config.Targets == nil {
 				Config.Targets = make(map[string]cfg.TargetConfig)
 			}
@@ -85,14 +89,9 @@ the current target to the latest successfully loged-in-to target.`,
 				Config.CurrentTarget = name
 			}
 
-			// Write Config back to disk
-			viper.Set("targets", Config.Targets)
-			if err = viper.WriteConfig(); err != nil {
-				logger.Fatalf(
-					"Failed to update local config with new target: %v\n",
-					err,
-				)
-			}
+			saveConfig()
+
+			logger.Printf("Successfully logged in to target %s\n", name)
 		},
 	}
 )
@@ -141,7 +140,7 @@ func init() {
 	rootCmd.AddCommand(loginCmd)
 }
 
-func validateFlags() {
+func validateLoginFlags() {
 	_, err := url.Parse(endpoint)
 	if err != nil {
 		logger.Fatalf(
