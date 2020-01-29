@@ -52,7 +52,7 @@ user has access to`,
 				for _, group := range groups {
 					if group.ParentID == 0 {
 						t.AppendRow(table.Row{
-							"group", group.Name, group.ID, group.Description,
+							"group", group.Path, group.ID, group.Description,
 						})
 					}
 				}
@@ -67,7 +67,7 @@ user has access to`,
 
 				for _, project := range projects {
 					t.AppendRow(table.Row{
-						"project", project.Name, project.ID, project.Description,
+						"project", project.Path, project.ID, project.Description,
 					})
 				}
 			} else {
@@ -81,7 +81,7 @@ user has access to`,
 
 				for _, group := range groups {
 					t.AppendRow(table.Row{
-						"group", group.Name, group.ID, group.Description,
+						"group", group.Path, group.ID, group.Description,
 					})
 				}
 
@@ -95,7 +95,7 @@ user has access to`,
 
 				for _, project := range projects {
 					t.AppendRow(table.Row{
-						"project", project.Name, project.ID, project.Description,
+						"project", project.Path, project.ID, project.Description,
 					})
 				}
 			}
