@@ -1,10 +1,26 @@
 package cmd
 
 import (
+	"path"
+
 	"github.com/loksonarius/gli/cfg"
 	"github.com/spf13/viper"
 	"github.com/xanzy/go-gitlab"
 )
+
+func resolvePath(currentPath, targetPath string) string {
+	result := currentPath
+
+	if len(targetPath) > 0 {
+		if targetPath[0] == '/' {
+			result = targetPath
+		} else {
+			result = path.Join(currentPath, targetPath)
+		}
+	}
+
+	return path.Clean(result)
+}
 
 func saveConfig() {
 	viper.Set("currenttarget", Config.CurrentTarget)

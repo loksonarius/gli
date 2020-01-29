@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"path"
-
 	"github.com/jedib0t/go-pretty/table"
 	"github.com/spf13/cobra"
 )
@@ -23,24 +21,17 @@ user has access to`,
 		Args: cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			target := Config.Targets[Config.CurrentTarget]
-			groupPath := target.CurrentGroup
-
-			// Resolve and clean up group path to list
-			if len(args) > 0 && len(args[0]) > 0 {
-				if args[0][0] == '/' {
-					groupPath = args[0]
-				} else {
-					groupPath = path.Join(groupPath, args[0])
-				}
+			path := target.CurrentGroup
+			if len(args) > 0 {
+				path = resolvePath(target.CurrentGroup, args[0])
 			}
-			groupPath = path.Clean(groupPath)[1:]
 
 			t.AppendHeader(table.Row{
 				"Type", "Name", "ID", "Description",
 			})
 
 			client := getClient(target)
-			if groupPath == "" {
+			if path == "/" {
 				// We're listing user resources
 				user, _, err := client.Users.CurrentUser()
 				if err != nil {
@@ -80,7 +71,7 @@ user has access to`,
 					})
 				}
 			} else {
-				groups, _, err := client.Groups.ListSubgroups(groupPath, nil)
+				groups, _, err := client.Groups.ListSubgroups(path[1:], nil)
 				if err != nil {
 					logger.Fatalf(
 						"Received error listing groups: %v",
@@ -94,7 +85,7 @@ user has access to`,
 					})
 				}
 
-				projects, _, err := client.Groups.ListGroupProjects(groupPath, nil)
+				projects, _, err := client.Groups.ListGroupProjects(path[1:], nil)
 				if err != nil {
 					logger.Fatalf(
 						"Received error listing projects: %v",
