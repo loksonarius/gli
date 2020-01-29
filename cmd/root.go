@@ -29,15 +29,6 @@ developer workflows with GitLab.`,
 
 func init() {
 	cobra.OnInitialize(initConfig)
-
-	rootCmd.PersistentFlags().StringVarP(
-		&Config.CurrentTarget,
-		"target",
-		"T",
-		Config.CurrentTarget,
-		"target GitLab instance to run commands against",
-	)
-	viper.BindPFlag("currentTarget", rootCmd.PersistentFlags().Lookup("target"))
 }
 
 func initConfig() {
@@ -83,26 +74,6 @@ func initConfig() {
 				err,
 			)
 		}
-	}
-}
-
-func saveConfig() {
-	viper.Set("currenttarget", Config.CurrentTarget)
-	viper.Set("targets", Config.Targets)
-	if err := viper.WriteConfig(); err != nil {
-		logger.Fatalf(
-			"Failed to update local config with new target: %v\n",
-			err,
-		)
-	}
-}
-
-func verifyTargetName(name string) {
-	if _, ok := Config.Targets[name]; !ok {
-		logger.Fatalf(
-			"%s is not a saved target",
-			name,
-		)
 	}
 }
 

@@ -49,24 +49,20 @@ the current target to the latest successfully loged-in-to target.`,
 				)
 			}
 
-			auth := cfg.AuthConfig{
-				Endpoint: endpoint,
-				Type:     authType,
-				Token:    token,
-				Username: username,
-				Password: password,
+			newTarget := cfg.TargetConfig{
+				CurrentGroup: "/",
+				Auth: cfg.AuthConfig{
+					Endpoint: endpoint,
+					Type:     authType,
+					Token:    token,
+					Username: username,
+					Password: password,
+				},
 			}
-
-			client, err := auth.Client()
-			if err != nil {
-				logger.Fatalf(
-					"Received following error creating auth client: %v\n",
-					err,
-				)
-			}
+			client := getClient(newTarget)
 
 			// Check that credentials actually work with a basic request
-			if _, _, err = client.Users.CurrentUserStatus(); err != nil {
+			if _, _, err := client.Users.CurrentUserStatus(); err != nil {
 				logger.Fatalf(
 					"Request failed against user status api: %v\n",
 					err,
@@ -78,10 +74,7 @@ the current target to the latest successfully loged-in-to target.`,
 			if Config.Targets == nil {
 				Config.Targets = make(map[string]cfg.TargetConfig)
 			}
-			Config.Targets[name] = cfg.TargetConfig{
-				CurrentGroup: "/",
-				Auth:         auth,
-			}
+			Config.Targets[name] = newTarget
 
 			// If no previous target was selected or no other exists, set this
 			// new target as the selected
