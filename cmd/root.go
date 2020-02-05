@@ -19,8 +19,8 @@ var (
 		Short: "Handle daily dev tasks with GitLab",
 		Long: `gli is a CLI to interact with GitLab. The intent is to be more
 than a way of running arbitrary CRUD commands against GitLab API
-resources, and act like an actual developer interface for typical
-developer workflows with GitLab.`,
+resources, and instead act like an actual developer interface for
+typical developer workflows with GitLab.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			logger.Println(Config)
 		},
