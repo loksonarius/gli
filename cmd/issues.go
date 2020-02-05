@@ -1,6 +1,12 @@
 package cmd
 
 import (
+	"fmt"
+	"strconv"
+	"strings"
+
+	"github.com/jedib0t/go-pretty/text"
+	"github.com/mitchellh/go-wordwrap"
 	"github.com/spf13/cobra"
 )
 
@@ -78,7 +84,69 @@ labels, assignee, milestone, time tracking, and comments. For a full
 history of an issue, consider the 'issue history' command.`,
 		Args: cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			logger.Println("command unimplemented")
+			target := Config.Targets[Config.CurrentTarget]
+			path := resolvePath(target.CurrentGroup, args[0])
+			issueID, err := strconv.Atoi(args[1])
+			if _, err := strconv.Atoi(args[1]); err != nil {
+				logger.Fatalln("Issue arg must be an int")
+			}
+			if _, err := strconv.Atoi(args[0]); err == nil {
+				// project seems ID'd by an int
+				// we can use the ID directly instead of a full path
+				path = args[0]
+			} else {
+				// Remove leading '/' to get namespaced project ID
+				path = path[1:]
+			}
+
+			client := getClient(target)
+			_, _, err = client.Projects.GetProject(path, nil)
+			if err != nil {
+				logger.Fatalf(
+					"Received error getting project: %v",
+					err,
+				)
+			}
+
+			issue, _, err := client.Issues.GetIssue(path, issueID)
+			if err != nil {
+				logger.Fatalf(
+					"Received error getting issue: %v",
+					err,
+				)
+			}
+
+			status := text.Faint.Sprint(issue.State)
+			id := fmt.Sprintf("%d", issueID)
+			title := text.Bold.Sprint(issue.Title)
+			milestone := "No Milestone"
+			if issue.Milestone != nil {
+				milestone = issue.Milestone.Title
+			}
+			labels := strings.Join(issue.Labels, text.Faint.Sprint(", "))
+			assigneeText := "currently unassigned"
+			if issue.Assignee != nil {
+				assigneeText = fmt.Sprintf(
+					"and assigned to %s",
+					issue.Assignee.Name,
+				)
+			}
+			description := "| " + strings.ReplaceAll(
+				wordwrap.WrapString(issue.Description, 80),
+				"\n",
+				"\n| ",
+			)
+
+			logger.Printf(
+				"[%s] %s\nStatus: %s %s\n%s\nMilestone: %s\nLabels: %s\n",
+				id,
+				title,
+				status,
+				assigneeText,
+				description,
+				milestone,
+				labels,
+			)
 		},
 	}
 )
