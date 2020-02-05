@@ -22,6 +22,9 @@ Project ID's are one of:
 		Long: `Closes the given issue. Can be undone using the issue reopen
 command.`,
 		Args: cobra.ExactArgs(2),
+		Run: func(cmd *cobra.Command, args []string) {
+			logger.Println("command unimplemented")
+		},
 	}
 
 	issueCommentCmd = &cobra.Command{
@@ -38,6 +41,9 @@ GitLab doesn't seem to publicly document this feature, but to play with
 it interactively, go to any ticket in your browser and start a blank
 line in a comment with '/' to see available options.`,
 		Args: cobra.ExactArgs(2),
+		Run: func(cmd *cobra.Command, args []string) {
+			logger.Println("command unimplemented")
+		},
 	}
 
 	issueHistoryCmd = &cobra.Command{
@@ -48,6 +54,9 @@ issues. If a project ID is specified, all events will be filtered to
 just that project. If an issue ID is specified on top of a project ID,
 then results will be further filtered to events on just that issue.`,
 		Args: cobra.MaximumNArgs(2),
+		Run: func(cmd *cobra.Command, args []string) {
+			logger.Println("command unimplemented")
+		},
 	}
 
 	issueListCmd = &cobra.Command{
@@ -56,6 +65,9 @@ then results will be further filtered to events on just that issue.`,
 		Long: `Lists all issues under the current group. If a project ID is
 specified, results will be limited to issues under that project.`,
 		Args: cobra.MaximumNArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			logger.Println("command unimplemented")
+		},
 	}
 
 	issueViewCmd = &cobra.Command{
@@ -65,6 +77,9 @@ specified, results will be limited to issues under that project.`,
 labels, assignee, milestone, time tracking, and comments. For a full
 history of an issue, consider the 'issue history' command.`,
 		Args: cobra.ExactArgs(2),
+		Run: func(cmd *cobra.Command, args []string) {
+			logger.Println("command unimplemented")
+		},
 	}
 )
 
