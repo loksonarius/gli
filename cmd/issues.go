@@ -147,6 +147,13 @@ history of an issue, consider the 'issue history' command.`,
 				milestone,
 				labels,
 			)
+
+			logger.Println(
+				text.Faint.Sprintf(
+					"To view this issue in your browser, go to: %s",
+					issue.WebURL,
+				),
+			)
 		},
 	}
 )
