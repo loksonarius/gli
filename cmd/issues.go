@@ -5,9 +5,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/jedib0t/go-pretty/table"
 	"github.com/jedib0t/go-pretty/text"
 	"github.com/mitchellh/go-wordwrap"
 	"github.com/spf13/cobra"
+	"github.com/xanzy/go-gitlab"
 )
 
 var (
@@ -20,17 +22,6 @@ Project ID's are one of:
   - ID: the ID of the project (such as the one printed by the ls subcommand)
   - relative path: path to the project from the current group including
   - absolute path: the path to the project starting with / and group name`,
-	}
-
-	issueCloseCmd = &cobra.Command{
-		Use:   "close [project] [issue]",
-		Short: "Closes an open issue",
-		Long: `Closes the given issue. Can be undone using the issue reopen
-command.`,
-		Args: cobra.ExactArgs(2),
-		Run: func(cmd *cobra.Command, args []string) {
-			logger.Println("command unimplemented")
-		},
 	}
 
 	issueCommentCmd = &cobra.Command{
@@ -68,11 +59,54 @@ then results will be further filtered to events on just that issue.`,
 	issueListCmd = &cobra.Command{
 		Use:   "list [project]",
 		Short: "List issues under current group",
-		Long: `Lists all issues under the current group. If a project ID is
+		Long: `List all open issues under the current group. If a project ID is
 specified, results will be limited to issues under that project.`,
 		Args: cobra.MaximumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			logger.Println("command unimplemented")
+			target := Config.Targets[Config.CurrentTarget]
+			client := getClient(target)
+			path := resolvePath(target.CurrentGroup, "")[1:]
+			if len(args) > 0 {
+				if _, err := strconv.Atoi(args[0]); err == nil {
+					path = args[0]
+				} else {
+					path = resolvePath(target.CurrentGroup, args[0])[1:]
+				}
+			}
+
+			var issues []*gitlab.Issue
+			var err error
+			if len(args) == 0 {
+				issues, _, err = client.Issues.ListGroupIssues(path, nil)
+			} else {
+				issues, _, err = client.Issues.ListProjectIssues(path, nil)
+			}
+
+			if err != nil {
+				logger.Fatalf(
+					"Received error getting listing issues: %v",
+					err,
+				)
+			}
+
+			t.AppendHeader(table.Row{
+				"Project", "ID", "Title", "Labels",
+			})
+			t.SetColumnConfigs([]table.ColumnConfig{
+				table.ColumnConfig{Name: "Title", WidthMax: 80},
+			})
+
+			for _, issue := range issues {
+				t.AppendRow(table.Row{
+					issue.ProjectID, issue.IID, issue.Title, issue.Labels,
+				})
+			}
+
+			t.SortBy([]table.SortBy{
+				table.SortBy{Name: "Project", Mode: table.Asc},
+				table.SortBy{Name: "ID", Mode: table.Asc},
+			})
+			logger.Println(t.Render())
 		},
 	}
 
